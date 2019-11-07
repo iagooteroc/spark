@@ -86,8 +86,8 @@ if __name__ == "__main__":
         # Aplicamos la función de fitting y desempaquetamos los tres valores para añadirle el texto de identificación
         # rddAlineamientos = sequences.map(lambda c: (*fitting(c[1],cadena),c[0])).cache()
         rddAlineamientos = sequences.map(lambda c: (*fitting_alignment.alinea(c[1],cadena),c[0])).cache()
-        best_al = rddAlineamientos.max(lambda x: x[2])
-        worst_al = rddAlineamientos.min(lambda x: x[2])
+        best_al = rddAlineamientos.max(lambda x: x[0])
+        worst_al = rddAlineamientos.min(lambda x: x[0])
         print('###################################')
         print('Mayor puntuación:')
         print(best_al)
