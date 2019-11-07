@@ -1,6 +1,20 @@
 #!/usr/bin/python3
 from pyspark import SparkContext, SparkConf
-import fitting_alignment
+from Bio import pairwise2
+import re
+
+""" Fitting Alignment usando el módulo Biopython """
+def fitting(seq1,seq2):
+        align = pairwise2.align.globalms(seq1, seq2, 1, -1, -1, -1, penalize_end_gaps=(True, False))
+
+        # Buscamos el comienzo y final del alineamiento
+        # para obtener la misma sección en la secuencia de referencia
+        start = re.search(r'[^\-]', align[0][1]).start()
+        end = re.search(r'[^\-]', align[0][1][::-1]).start()
+        end = len(align[0][1]) - end
+
+        # Devolvemos, del mejor alineamiento (align[0]), el score y las cadenas modificadas
+        return (align[0][2], align[0][0][start:end], align[0][1][start:end])
 
 # Recorre la lista de índices de las cabeceras (elements)
 # y se queda con la mayor de las que son menor a query
@@ -72,7 +86,7 @@ if __name__ == "__main__":
         # que devuelve una tupla con la cabecera y la secuencia
         sequences=groupedRDD.map(lambda groupId_groupElements: listToSequenceTuple(groupId_groupElements[1]))
         # Aplicamos la función de fitting y desempaquetamos los tres valores para añadirle el texto de identificación
-        rddAlineamientos = sequences.map(lambda c: (*fitting_alignment.alinea(c[1],cadena),c[0])).cache()
+        rddAlineamientos = sequences.map(lambda c: (*fitting(c[1],cadena),c[0])).cache()
         best_al = rddAlineamientos.max(lambda x: x[0])
         worst_al = rddAlineamientos.min(lambda x: x[0])
         print('###################################')
