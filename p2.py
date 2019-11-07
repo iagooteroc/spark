@@ -2,12 +2,15 @@
 from pyspark import SparkContext, SparkConf
 from Bio import pairwise2
 import re
+import fitting_alignment
+
+# c++ -O3 -Wall -shared -std=c++11 -fPIC `python3 -m pybind11 --includes` fitting_alignment.cpp -o fitting_alignment`python3-config --extension-suffix`
 
 n_proc = "local[2]"
 conf = SparkConf().setAppName("p2").setMaster(n_proc)
 sc = SparkContext(conf=conf)
 
-working_dir = 'material_spark/'
+working_dir = ''
 dataset_dir = working_dir + 'dataset.txt'
 cadena_dir = working_dir + 'cadena.txt'
 
@@ -35,9 +38,9 @@ cadena = cadena[:-1]
 cadena_f.close()
 
 # Aplicamos la función de fitting (eliminando el último caracter de c porque es un '\n')
-rddAlineamientos = rddCadenas.map(lambda c: fitting(c[:-1],cadena)).cache()
-best_al = rddAlineamientos.max(lambda x: x[0])
-worst_al = rddAlineamientos.min(lambda x: x[0])
+rddAlineamientos = rddCadenas.map(lambda c: fitting_alignment.alinea(c[:-1],cadena)).cache()
+best_al = rddAlineamientos.max(lambda x: x[2])
+worst_al = rddAlineamientos.min(lambda x: x[2])
 print('###################################')
 print('n_proc:',n_proc)
 print('===================================')
