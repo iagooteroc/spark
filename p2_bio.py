@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from pyspark import SparkContext, SparkConf
-import fitting_alignment
+from Bio import pairwise2
+import re
 
 n_proc = "local[8]"
 conf = SparkConf().setAppName("p2").setMaster(n_proc)
@@ -10,6 +11,19 @@ sc.setLogLevel("INFO")
 working_dir = ''
 dataset_dir = working_dir + 'dataset.txt'
 cadena_dir = working_dir + 'cadena.txt'
+
+""" Fitting Alignment usando el módulo Biopython """
+def fitting(seq1,seq2):
+    align = pairwise2.align.globalms(seq1, seq2, 1, -1, -1, -1, penalize_end_gaps=(True, False))
+
+    # Buscamos el comienzo y final del alineamiento
+    # para obtener la misma sección en la secuencia de referencia
+    start = re.search(r'[^\-]', align[0][1]).start()
+    end = re.search(r'[^\-]', align[0][1][::-1]).start()
+    end = len(align[0][1]) - end
+
+    # Devolvemos, del mejor alineamiento (align[0]), el score y las cadenas modificadas
+    return (align[0][2], align[0][0][start:end], align[0][1][start:end])
 
 # Lee el fichero de texto y crea un elemento en el RDD por cada línea
 rddCadenas = sc.textFile(dataset_dir) 
@@ -21,7 +35,7 @@ cadena = cadena[:-1]
 cadena_f.close()
 
 # Aplicamos la función de fitting (eliminando el último caracter de c porque es un '\n')
-rddAlineamientos = rddCadenas.map(lambda c: fitting_alignment.alinea(c[:-1],cadena))#.cache()
+rddAlineamientos = rddCadenas.map(lambda c: fitting(c[:-1],cadena))#.cache()
 best_al = rddAlineamientos.max(lambda x: x[0])
 worst_al = rddAlineamientos.min(lambda x: x[0])
 print('###################################')

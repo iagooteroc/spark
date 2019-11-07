@@ -3,7 +3,7 @@ from Bio import pairwise2
 import re
 import fitting_alignment
 
-""" Fitting Alignment """
+""" Fitting Alignment usando el módulo Biopython """
 def fitting(seq1,seq2):
         align = pairwise2.align.globalms(seq1, seq2, 1, -1, -1, -1, penalize_end_gaps=(True, False))
 
@@ -84,8 +84,8 @@ if __name__ == "__main__":
         # que devuelve una tupla con la cabecera y la secuencia
         sequences=groupedRDD.map(lambda groupId_groupElements: listToSequenceTuple(groupId_groupElements[1]))
         # Aplicamos la función de fitting y desempaquetamos los tres valores para añadirle el texto de identificación
-        # rddAlineamientos = sequences.map(lambda c: (*fitting(c[1],cadena),c[0])).cache()
-        rddAlineamientos = sequences.map(lambda c: (*fitting_alignment.alinea(c[1],cadena),c[0])).cache()
+        rddAlineamientos = sequences.map(lambda c: (*fitting(c[1],cadena),c[0]))#.cache()
+        # rddAlineamientos = sequences.map(lambda c: (*fitting_alignment.alinea(c[1],cadena),c[0])).cache()
         best_al = rddAlineamientos.max(lambda x: x[0])
         worst_al = rddAlineamientos.min(lambda x: x[0])
         print('###################################')
@@ -96,6 +96,3 @@ if __name__ == "__main__":
         print(worst_al)
         print('###################################')
         input("Press Enter to finish...")
-
-
-
