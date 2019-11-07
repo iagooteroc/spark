@@ -12,7 +12,7 @@
 
 using namespace std;
 
-tuple<string,string,int> alinea(char referencia[], char subcadena[])
+tuple<int,string,string> alinea(char referencia[], char subcadena[])
 {
 	size_t largo1 {strlen(referencia)};
 	size_t largo2 {strlen(subcadena)};
@@ -191,7 +191,7 @@ tuple<string,string,int> alinea(char referencia[], char subcadena[])
 	}
 	resultado1_reverse[largo_resultado] = '\0';
 	resultado2_reverse[largo_resultado] = '\0';
-	tuple<string,string,int> result {resultado1_reverse,resultado2_reverse,max_score};
+	tuple<int,string,string> result {max_score,resultado1_reverse,resultado2_reverse};
 
 	for (size_t i = 0; i < largo2; ++i)
 		{
